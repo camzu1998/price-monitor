@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamp('last_scraped_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['product_id']);
+            $table->unique(['product_id', 'source_name'], 'product_sources_unique_per_platform');
             $table->index(['source_name', 'is_active']);
             $table->index('last_scraped_at');
         });
