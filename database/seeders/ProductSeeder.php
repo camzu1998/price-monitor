@@ -1,0 +1,32 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Product;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class ProductSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        Product::factory()
+            ->count(5)
+            ->create();
+
+        Product::factory()
+            ->electronics()
+            ->count(10)
+            ->create();
+
+        Product::factory()
+            ->inactive()
+            ->count(3)
+            ->create();
+
+        $this->command->info('Created ' . Product::count() . ' products');
+    }
+}
