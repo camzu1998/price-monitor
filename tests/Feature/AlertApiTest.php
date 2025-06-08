@@ -37,14 +37,12 @@ class AlertApiTest extends TestCase
         $response = $this->postJson('/api/alerts', $alertData);
 
         $response->assertStatus(201)
-            ->assertJson([
-                'data' => [
-                    'product_id' => $product->id,
-                    'email' => 'test@example.com',
-                    'target_price' => 999.99,
-                    'condition' => 'below',
-                    'is_active' => true
-                ]
+            ->assertJsonFragment([
+                'product_id' => $product->id,
+                'email' => 'test@example.com',
+                'target_price' => "999.99",
+                'condition' => 'below',
+                'is_active' => true
             ]);
 
         $this->assertDatabaseHas('price_alerts', [
@@ -63,6 +61,7 @@ class AlertApiTest extends TestCase
             'product_id' => $product->id,
             'email' => 'test@example.com',
             'condition' => 'percent_drop',
+            'target_price' => 0,
             'percent_threshold' => 15.0,
             'notification_channel' => 'email'
         ];

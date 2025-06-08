@@ -128,4 +128,5 @@ class Product extends Model
             ->where('is_available', true)
             ->avg('price');
     }
+
 }
