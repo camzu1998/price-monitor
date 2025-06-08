@@ -37,7 +37,7 @@ class ProductSource extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function priceHistory(): HasMany
+    public function priceHistories(): HasMany
     {
         return $this->hasMany(PriceHistory::class);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AlertCondition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,7 +33,8 @@ class PriceAlert extends Model
         'last_triggered_at' => 'datetime',
         'trigger_count' => 'integer',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'condition' => AlertCondition::class
     ];
 
     // Relationships
@@ -69,10 +71,11 @@ class PriceAlert extends Model
         }
 
         return match($this->condition) {
-            'below' => $priceHistory->price < $this->target_price,
-            'above' => $priceHistory->price > $this->target_price,
-            'equals' => abs($priceHistory->price - $this->target_price) < 0.01,
-            'percent_drop' => $this->checkPercentDrop($priceHistory),
+            AlertCondition::BELOW => $priceHistory->price < $this->target_price,
+            AlertCondition::ABOVE => $priceHistory->price > $this->target_price,
+            AlertCondition::EQUALS => abs($priceHistory->price - $this->target_price) < 0.01,
+            AlertCondition::PERCENT_DROP => $this->checkPercentDrop($priceHistory),
+            AlertCondition::PERCENT_INCREASE => $this->checkPercentIncrease($priceHistory),
             default => false
         };
     }
@@ -87,6 +90,16 @@ class PriceAlert extends Model
         return $changePercent !== null && $changePercent <= -$this->percent_threshold;
     }
 
+    private function checkPercentIncrease(PriceHistory $priceHistory): bool
+    {
+        if (!$priceHistory->previous_price || !$this->percent_threshold) {
+            return false;
+        }
+
+        $changePercent = $priceHistory->price_change_percent;
+        return $changePercent !== null && $changePercent >= $this->percent_threshold;
+    }
+
     public function markAsTriggered(): void
     {
         $this->update([
@@ -98,16 +111,5 @@ class PriceAlert extends Model
     public function getFormattedTargetPriceAttribute(): string
     {
         return number_format($this->target_price, 2) . ' PLN';
-    }
-
-    public function getConditionTextAttribute(): string
-    {
-        return match($this->condition) {
-            'below' => 'falls below',
-            'above' => 'rises above',
-            'equals' => 'equals',
-            'percent_drop' => 'drops by ' . $this->percent_threshold . '%',
-            default => 'unknown condition'
-        };
     }
 }

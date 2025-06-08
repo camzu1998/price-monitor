@@ -38,25 +38,35 @@ class PriceAlertSeeder extends Seeder
         if ($iphone) {
             PriceAlert::factory()
                 ->for($iphone)
-                ->below(4000)
-                ->state(['email' => 'demo@example.com'])
+                ->belowPrice(4000.00)
+                ->forUser('demo@example.com')
                 ->create();
 
             PriceAlert::factory()
                 ->for($iphone)
-                ->percentDrop(10)
-                ->state(['email' => 'bargain@example.com'])
+                ->percentDrop(10.0)
+                ->forUser('bargain@example.com')
                 ->create();
         }
 
-        PriceAlert::factory()
-            ->triggered()
-            ->count(3)
-            ->create();
+        Product::inRandomOrder()
+            ->take(3)
+            ->each(function ($product) {
+                PriceAlert::factory()
+                    ->for($product)
+                    ->withTriggers(rand(1, 5))
+                    ->forUser('triggered@example.com')
+                    ->create();
+            });
 
-        PriceAlert::factory()
-            ->inactive()
-            ->count(2)
-            ->create();
+        Product::inRandomOrder()
+            ->take(2)
+            ->each(function ($product) {
+                PriceAlert::factory()
+                    ->for($product)
+                    ->inactive()
+                    ->forUser('inactive@example.com')
+                    ->create();
+            });
     }
 }

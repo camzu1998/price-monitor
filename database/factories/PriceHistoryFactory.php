@@ -2,93 +2,98 @@
 
 namespace Database\Factories;
 
+use App\Models\PriceHistory;
 use App\Models\ProductSource;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PriceHistory>
- */
 class PriceHistoryFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = PriceHistory::class;
+
     public function definition(): array
     {
-        $price = fake()->randomFloat(2, 10, 2000);
-        $previousPrice = fake()->optional(0.8)->randomFloat(2, $price * 0.7, $price * 1.3);
+        $price = $this->faker->randomFloat(2, 100, 2000);
 
         return [
             'product_source_id' => ProductSource::factory(),
             'price' => $price,
-            'previous_price' => $previousPrice,
+            'previous_price' => $price * 0.9, // DEFAULT: 10% lower than current (for predictable tests)
             'currency' => 'PLN',
-            'is_available' => fake()->boolean(95), // 95% available
-            'raw_data' => [
-                'html_snippet' => '<span class="price">' . $price . '</span>',
-                'scraped_text' => $price . ' PLN',
-                'response_time' => fake()->randomFloat(2, 0.5, 3.0),
-            ],
-            'metadata' => [
-                'scraper_version' => '1.0.0',
-                'user_agent' => 'PriceBot/1.0',
-                'ip_address' => fake()->ipv4(),
-                'response_code' => fake()->randomElement([200, 200, 200, 429, 503]), // Mostly 200
-            ],
-            'scraped_at' => fake()->dateTimeBetween('-30 days', 'now'),
+            'is_available' => true,
+            'scraped_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 
+    /**
+     * Price with NO previous price (first scrape)
+     */
+    public function firstPrice(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'previous_price' => null,
+        ]);
+    }
+
+    /**
+     * Price with INCREASE from previous
+     */
+    public function priceIncrease(float $percent = 25.0): static
+    {
+        return $this->state(function (array $attributes) use ($percent) {
+            $currentPrice = $attributes['price'];
+            $previousPrice = $currentPrice / (1 + ($percent / 100));
+
+            return [
+                'previous_price' => round($previousPrice, 2),
+            ];
+        });
+    }
+
+    /**
+     * Price with DROP from previous
+     */
+    public function priceDrop(float $percent = 20.0): static
+    {
+        return $this->state(function (array $attributes) use ($percent) {
+            $currentPrice = $attributes['price'];
+            $previousPrice = $currentPrice / (1 - ($percent / 100));
+
+            return [
+                'previous_price' => round($previousPrice, 2),
+            ];
+        });
+    }
+
+    /**
+     * Specific price with exact previous price
+     */
+    public function withPrices(float $current, float $previous = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'price' => $current,
+            'previous_price' => $previous,
+        ]);
+    }
+
+    /**
+     * Available product
+     */
+    public function available(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_available' => true,
+        ]);
+    }
+
+    /**
+     * Unavailable product
+     */
     public function unavailable(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_available' => false,
-            'raw_data' => [
-                'html_snippet' => '<span class="unavailable">Out of stock</span>',
-                'scraped_text' => 'Temporarily unavailable',
-            ],
-        ]);
-    }
-
-    public function priceDropped(): static
-    {
-        return $this->state(function (array $attributes) {
-            $currentPrice = fake()->randomFloat(2, 50, 500);
-            $previousPrice = $currentPrice * fake()->randomFloat(2, 1.1, 1.5); // 10-50% higher
-
-            return [
-                'price' => $currentPrice,
-                'previous_price' => $previousPrice,
-            ];
-        });
-    }
-
-    public function priceIncreased(): static
-    {
-        return $this->state(function (array $attributes) {
-            $previousPrice = fake()->randomFloat(2, 50, 500);
-            $currentPrice = $previousPrice * fake()->randomFloat(2, 1.1, 1.3); // 10-30% higher
-
-            return [
-                'price' => $currentPrice,
-                'previous_price' => $previousPrice,
-            ];
-        });
-    }
-
-    public function recent(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'scraped_at' => fake()->dateTimeBetween('-24 hours', 'now'),
-        ]);
-    }
-
-    public function withCurrency(string $currency): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'currency' => $currency,
         ]);
     }
 }

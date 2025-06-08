@@ -2,70 +2,129 @@
 
 namespace Database\Factories;
 
+use App\Models\PriceAlert;
 use App\Models\Product;
+use App\Enums\AlertCondition;
+use App\Enums\NotificationChannel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PriceAlert>
- */
 class PriceAlertFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = PriceAlert::class;
+
     public function definition(): array
     {
-        $condition = fake()->randomElement(['below', 'above', 'equals', 'percent_drop']);
-
         return [
             'product_id' => Product::factory(),
-            'email' => fake()->safeEmail(),
-            'target_price' => fake()->randomFloat(2, 20, 1500),
-            'condition' => $condition,
-            'percent_threshold' => $condition === 'percent_drop' ? fake()->randomFloat(1, 5, 30) : null,
-            'notification_channel' => fake()->randomElement(['email', 'slack', 'webhook']),
-            'notification_config' => [
-                'template' => 'price_alert',
-                'priority' => fake()->randomElement(['low', 'medium', 'high']),
-                'include_product_image' => true,
-            ],
-            'is_active' => fake()->boolean(90),
-            'last_triggered_at' => fake()->optional(0.3)->dateTimeBetween('-1 month', 'now'),
-            'trigger_count' => fake()->numberBetween(0, 10),
+            'email' => $this->faker->email(),
+            'condition' => AlertCondition::BELOW->value, // DEFAULT condition for predictability
+            'target_price' => 1000.00, // DEFAULT target price
+            'percent_threshold' => null,
+            'notification_channel' => NotificationChannel::EMAIL->value,
+            'is_active' => true,
+            'trigger_count' => 0,
+            'last_triggered_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 
-    public function below(float $price): static
+    /**
+     * Below price condition
+     */
+    public function belowPrice(float $targetPrice = 1000.00): static
     {
         return $this->state(fn (array $attributes) => [
-            'condition' => 'below',
-            'target_price' => $price,
+            'condition' => AlertCondition::BELOW->value,
+            'target_price' => $targetPrice,
             'percent_threshold' => null,
         ]);
     }
 
-    public function percentDrop(float $percent): static
+    /**
+     * Above price condition
+     */
+    public function abovePrice(float $targetPrice = 1000.00): static
     {
         return $this->state(fn (array $attributes) => [
-            'condition' => 'percent_drop',
-            'percent_threshold' => $percent,
+            'condition' => AlertCondition::ABOVE->value,
+            'target_price' => $targetPrice,
+            'percent_threshold' => null,
         ]);
     }
 
-    public function triggered(): static
+    /**
+     * Percent drop condition
+     */
+    public function percentDrop(float $threshold = 15.0): static
     {
         return $this->state(fn (array $attributes) => [
-            'last_triggered_at' => fake()->dateTimeBetween('-1 week', 'now'),
-            'trigger_count' => fake()->numberBetween(1, 5),
+            'condition' => AlertCondition::PERCENT_DROP->value,
+            'target_price' => 0,
+            'percent_threshold' => $threshold,
         ]);
     }
 
+    /**
+     * Percent increase condition
+     */
+    public function percentIncrease(float $threshold = 20.0): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'condition' => AlertCondition::PERCENT_INCREASE->value,
+            'target_price' => 0,
+            'percent_threshold' => $threshold,
+        ]);
+    }
+
+    /**
+     * Alert for specific user
+     */
+    public function forUser(string $email): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email' => $email,
+        ]);
+    }
+
+    /**
+     * Active alert
+     */
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Inactive alert
+     */
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
+        ]);
+    }
+
+    /**
+     * Alert with specific trigger count
+     */
+    public function withTriggers(int $count): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'trigger_count' => $count,
+            'last_triggered_at' => $count > 0 ? now()->subDays(rand(1, 30)) : null,
+        ]);
+    }
+
+    /**
+     * SMS notification channel
+     */
+    public function smsNotification(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'notification_channel' => NotificationChannel::SMS->value,
         ]);
     }
 }

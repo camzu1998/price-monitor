@@ -64,19 +64,37 @@ class PriceHistorySeeder extends Seeder
 
     private function createPriceDropScenarios(): void
     {
-        PriceHistory::factory()
-            ->priceDropped()
-            ->recent()
-            ->count(5)
-            ->create();
+        $sources = ProductSource::inRandomOrder()->limit(5)->get();
+
+        foreach ($sources as $source) {
+            PriceHistory::factory()
+                ->for($source)
+                ->priceDrop(25.0)
+                ->available()
+                ->state([
+                    'scraped_at' => Carbon::now()->subDays(rand(1, 7)),
+                    'created_at' => Carbon::now()->subDays(rand(1, 7)),
+                    'updated_at' => Carbon::now()->subDays(rand(1, 7)),
+                ])
+                ->create();
+        }
     }
 
     private function createPriceIncreaseScenarios(): void
     {
-        PriceHistory::factory()
-            ->priceIncreased()
-            ->recent()
-            ->count(3)
-            ->create();
+        $sources = ProductSource::inRandomOrder()->limit(3)->get();
+
+        foreach ($sources as $source) {
+            PriceHistory::factory()
+                ->for($source)
+                ->priceIncrease(30.0)
+                ->available()
+                ->state([
+                    'scraped_at' => Carbon::now()->subDays(rand(1, 7)),
+                    'created_at' => Carbon::now()->subDays(rand(1, 7)),
+                    'updated_at' => Carbon::now()->subDays(rand(1, 7)),
+                ])
+                ->create();
+        }
     }
 }
