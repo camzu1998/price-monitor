@@ -2,48 +2,37 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTOs\ProductSearchDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductSearchRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\Product;
-use Illuminate\Http\Request;
+use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(
+        private readonly ProductService $productService
+    ) {}
+
+    public function index(ProductSearchRequest $request): AnonymousResourceCollection
     {
-        $query = Product::query();
-
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'ILIKE', "%{$search}%")
-                ->orWhere('description', 'ILIKE', "%{$search}%")
-                ->orWhere('sku', 'ILIKE', "%{$search}%");
-        }
-
-        if ($request->has('category')) {
-            $query->where('category', $request->get('category'));
-        }
-
-        $perPage = $request->get('per_page', 15);
-        $products = $query->paginate($perPage);
+        $searchDTO = ProductSearchDTO::fromRequest($request->validated());
+        $products = $this->productService->searchProducts($searchDTO);
 
         return ProductResource::collection($products);
     }
 
-    public function show(Request $request, $id)
+    public function show(int $id, ProductSearchRequest $request): ProductResource|JsonResponse
     {
-        $product = Product::find($id);
+        $include = $request->validated()['include'] ?? null;
+        $product = $this->productService->findProductWithIncludes($id, $include);
 
         if (!$product) {
             return response()->json([
                 'message' => 'Product not found'
             ], 404);
-        }
-
-        if ($request->has('include') && str_contains($request->get('include'), 'current_price')) {
-            $product->load(['sources.priceHistories' => function ($query) {
-                $query->latest('scraped_at')->take(1);
-            }]);
         }
 
         return new ProductResource($product);

@@ -15,7 +15,7 @@ class AlertResource extends JsonResource
             'product_id' => $this->product_id,
             'email' => $this->email,
             'target_price' => $this->target_price,
-            'condition' => $this->condition,
+            'condition' => $this->condition->value,
             'percent_threshold' => $this->percent_threshold,
             'notification_channel' => $this->notification_channel,
             'is_active' => $this->is_active,

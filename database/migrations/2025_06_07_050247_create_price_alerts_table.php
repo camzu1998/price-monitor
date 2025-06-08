@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->string('email');
             $table->decimal('target_price', 10, 2);
-            $table->enum('condition', ['below', 'above', 'equals', 'percent_drop']);
+            $table->string('condition');
             $table->decimal('percent_threshold', 5, 2)->nullable();
             $table->string('notification_channel')->default('email');
             $table->json('notification_config')->nullable();

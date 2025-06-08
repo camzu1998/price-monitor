@@ -2,46 +2,43 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTOs\AlertDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateAlertRequest;
+use App\Http\Requests\UpdateAlertRequest;
 use App\Http\Resources\AlertResource;
 use App\Models\PriceAlert;
+use App\Services\AlertService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AlertController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(
+        private readonly AlertService $alertService
+    ) {}
+
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $query = PriceAlert::with(['product']);
-
-        // Filter by email
         if ($request->has('email')) {
-            $query->where('email', $request->get('email'));
+            $alerts = $this->alertService->getAlertsForUser($request->get('email'));
+        } else {
+            $alerts = PriceAlert::with(['product'])->get();
         }
-
-        $alerts = $query->get();
 
         return AlertResource::collection($alerts);
     }
 
-    public function store(Request $request)
+    public function store(CreateAlertRequest $request): AlertResource
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'email' => 'required|email',
-            'condition' => ['required', Rule::in(['below', 'above', 'percent_drop', 'percent_increase'])],
-            'target_price' => 'required_if:condition,below,above|numeric|min:0',
-            'percent_threshold' => 'required_if:condition,percent_drop,percent_increase|numeric|min:0|max:100',
-            'notification_channel' => ['required', Rule::in(['email', 'webhook', 'sms'])],
-        ]);
-
-        $alert = PriceAlert::create($validated)->fresh();
-        $alert->load('product');
+        $alertDTO = AlertDTO::fromRequest($request->validated());
+        $alert = $this->alertService->createAlert($alertDTO);
 
         return new AlertResource($alert);
     }
 
-    public function show(int $id)
+    public function show(int $id): AlertResource|JsonResponse
     {
         $alert = PriceAlert::find($id);
 
@@ -55,94 +52,43 @@ class AlertController extends Controller
         return new AlertResource($alert);
     }
 
-    public function update(Request $request, PriceAlert $alert)
+    public function update(UpdateAlertRequest $request, PriceAlert $alert): AlertResource
     {
-        $validated = $request->validate([
-            'target_price' => 'sometimes|numeric|min:0',
-            'percent_threshold' => 'sometimes|numeric|min:0|max:100',
-            'is_active' => 'sometimes|boolean',
-            'notification_channel' => ['sometimes', Rule::in(['email', 'webhook', 'sms'])],
-        ]);
+        $updatedAlert = $this->alertService->updateAlert($alert, $request->validated());
 
-        $alert->update($validated);
-        $alert->load('product');
-
-        return new AlertResource($alert);
+        return new AlertResource($updatedAlert);
     }
 
-    public function destroy(PriceAlert $alert)
+    public function destroy(PriceAlert $alert): JsonResponse
     {
-        $alert->delete();
-        return response()->noContent();
+        $this->alertService->deleteAlert($alert);
+
+        return response()->json(null, 204);
     }
 
-    public function shouldTrigger(PriceAlert $alert)
+    public function shouldTrigger(PriceAlert $alert): JsonResponse
     {
-        $product = $alert->product;
-        $currentPrice = $product->getCurrentPrice();
+        $result = $this->alertService->shouldTrigger($alert);
 
-        if (!$currentPrice) {
-            return response()->json([
-                'should_trigger' => false,
-                'message' => 'No current price available',
-                'target_price' => $alert->target_price,
-                'condition' => $alert->condition
-            ]);
-        }
+        return response()->json($result);
+    }
 
-        $shouldTrigger = $this->checkTriggerCondition($alert, $currentPrice->price);
+    public function trigger(PriceAlert $alert): JsonResponse
+    {
+        $result = $this->alertService->triggerAlert($alert);
 
         return response()->json([
-            'should_trigger' => $shouldTrigger,
-            'current_price' => $currentPrice->price,
-            'target_price' => $alert->target_price,
-            'condition' => $alert->condition
-        ]);
-    }
-
-    public function trigger(PriceAlert $alert)
-    {
-        $alert->increment('trigger_count');
-        $alert->update(['last_triggered_at' => now()]);
-
-        return response()->json([
-            'message' => 'Alert triggered successfully',
+            'message' => $result['message'],
             'data' => [
-                'trigger_count' => $alert->trigger_count
+                'trigger_count' => $result['trigger_count']
             ]
         ]);
     }
 
-    public function statistics()
+    public function statistics(): JsonResponse
     {
-        $totalAlerts = PriceAlert::count();
-        $activeAlerts = PriceAlert::where('is_active', true)->count();
-        $triggeredAlerts = PriceAlert::where('trigger_count', '>', 0)->count();
-        $triggerRate = $totalAlerts > 0 ? round(($triggeredAlerts / $totalAlerts) * 100, 2) : 0;
+        $statistics = $this->alertService->getAlertStatistics();
 
-        return response()->json([
-            'total_alerts' => $totalAlerts,
-            'active_alerts' => $activeAlerts,
-            'triggered_alerts' => $triggeredAlerts,
-            'trigger_rate' => $triggerRate
-        ]);
-    }
-
-    private function checkTriggerCondition(PriceAlert $alert, float $currentPrice): bool
-    {
-        return match ($alert->condition) {
-            'below' => $currentPrice < $alert->target_price,
-            'above' => $currentPrice > $alert->target_price,
-            'percent_drop' => $this->checkPercentChange($alert, $currentPrice, 'drop'),
-            'percent_increase' => $this->checkPercentChange($alert, $currentPrice, 'increase'),
-            default => false,
-        };
-    }
-
-    private function checkPercentChange(PriceAlert $alert, float $currentPrice, string $direction): bool
-    {
-        // For now, return false - would need historical price comparison
-        // This would be implemented with proper business logic
-        return false;
+        return response()->json($statistics);
     }
 }
