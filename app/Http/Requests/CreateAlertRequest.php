@@ -18,7 +18,6 @@ class CreateAlertRequest extends FormRequest
     {
         return [
             'product_id' => 'required|exists:products,id',
-            'email' => 'required|email|max:255',
             'condition' => ['required', Rule::in(AlertCondition::getValues())],
             'target_price' => 'required_if:condition,below,above,equals|numeric|min:0|max:999999.99',
             'percent_threshold' => 'required_if:condition,percent_drop,percent_increase|numeric|min:0.01|max:100',
@@ -31,8 +30,6 @@ class CreateAlertRequest extends FormRequest
         return [
             'product_id.required' => 'Product selection is required.',
             'product_id.exists' => 'Selected product does not exist.',
-            'email.required' => 'Email address is required.',
-            'email.email' => 'Please provide a valid email address.',
             'condition.required' => 'Alert condition is required.',
             'condition.in' => 'Invalid alert condition selected.',
             'target_price.required_if' => 'Target price is required for price-based alerts.',
@@ -48,12 +45,6 @@ class CreateAlertRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => strtolower($this->email),
-            ]);
-        }
-
         if ($this->has('condition')) {
             $condition = AlertCondition::tryFrom($this->condition);
             if ($condition && $condition->isPercentBasedCondition() && !$this->has('target_price')) {

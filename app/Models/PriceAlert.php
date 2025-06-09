@@ -22,7 +22,8 @@ class PriceAlert extends Model
         'notification_config',
         'is_active',
         'last_triggered_at',
-        'trigger_count'
+        'trigger_count',
+        'user_id'
     ];
 
     protected $casts = [
@@ -41,6 +42,11 @@ class PriceAlert extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'email', 'email');
     }
 
     // Scopes
