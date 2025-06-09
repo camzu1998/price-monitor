@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use App\Models\Product;
 use App\Models\ProductSource;
@@ -18,10 +20,15 @@ class AlertApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->app->register(\App\Providers\AlertServiceProvider::class);
+
+        $this->user = User::factory()->create(['email' => 'test@example.com']);
+        Sanctum::actingAs($this->user);
     }
 
     #[Test]
@@ -143,25 +150,6 @@ class AlertApiTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_invalid_email()
-    {
-        $product = Product::factory()->create();
-
-        $alertData = [
-            'product_id' => $product->id,
-            'email' => 'invalid-email',
-            'target_price' => 999.99,
-            'condition' => AlertCondition::BELOW->value,
-            'notification_channel' => NotificationChannel::EMAIL->value
-        ];
-
-        $response = $this->postJson('/api/alerts', $alertData);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    #[Test]
     public function it_can_update_alert()
     {
         $product = Product::factory()->create();
@@ -219,13 +207,12 @@ class AlertApiTest extends TestCase
     public function it_can_get_alerts_for_user()
     {
         $product = Product::factory()->create();
-        $userEmail = 'user@example.com';
 
         // Create 3 alerts for our user
         PriceAlert::factory()
             ->count(3)
             ->for($product)
-            ->forUser($userEmail)
+            ->forUser($this->user->email)
             ->create();
 
         // Create 2 alerts for different user
@@ -235,7 +222,7 @@ class AlertApiTest extends TestCase
             ->forUser('other@example.com')
             ->create();
 
-        $response = $this->getJson("/api/alerts?email={$userEmail}");
+        $response = $this->getJson("/api/alerts?email={$this->user->email}");
 
         $response->assertStatus(200);
         $this->assertCount(3, $response->json('data'));
