@@ -23,7 +23,6 @@ class AlertServiceProvider extends ServiceProvider
     {
         // Register Repositories
         $this->app->bind(AlertRepositoryInterface::class, AlertRepository::class);
-        $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(PriceHistoryRepositoryInterface::class, PriceHistoryRepository::class);
 
         // Register Strategy Factory as singleton
@@ -36,13 +35,6 @@ class AlertServiceProvider extends ServiceProvider
             return new AlertService(
                 $app->make(AlertRepositoryInterface::class),
                 $app->make(AlertTriggerStrategyFactory::class)
-            );
-        });
-
-        // Register Product Service
-        $this->app->bind(ProductService::class, function ($app) {
-            return new ProductService(
-                $app->make(ProductRepositoryInterface::class)
             );
         });
 

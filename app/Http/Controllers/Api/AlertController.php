@@ -21,18 +21,17 @@ class AlertController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        if ($request->has('email')) {
-            $alerts = $this->alertService->getAlertsForUser($request->get('email'));
-        } else {
-            $alerts = PriceAlert::with(['product'])->get();
-        }
+        $alerts = $this->alertService->getAlertsForUser($request->user()->email);
 
         return AlertResource::collection($alerts);
     }
 
     public function store(CreateAlertRequest $request): AlertResource
     {
-        $alertDTO = AlertDTO::fromRequest($request->validated());
+        $data = $request->validated();
+        $data['email'] = $request->user()->email;
+
+        $alertDTO = AlertDTO::fromRequest($data);
         $alert = $this->alertService->createAlert($alertDTO);
 
         return new AlertResource($alert);
