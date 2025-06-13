@@ -1,0 +1,1711 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Price Monitor API",
+        "description": "API for monitoring product prices across different e-commerce platforms",
+        "contact": {
+            "name": "Price Monitor Support",
+            "email": "support@pricemonitor.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/alerts": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Get user alerts",
+                "description": "Get all alerts for the authenticated user",
+                "operationId": "getAlerts",
+                "responses": {
+                    "200": {
+                        "description": "User alerts list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertCollection"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Create price alert",
+                "description": "Create a new price alert for a product",
+                "operationId": "createAlert",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateAlertRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Alert created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/alerts/{alert}": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Get alert details",
+                "description": "Get details of a specific alert",
+                "operationId": "getAlert",
+                "parameters": [
+                    {
+                        "name": "alert",
+                        "in": "path",
+                        "description": "Alert ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alert details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not the owner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Alert not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Update alert",
+                "description": "Update an existing price alert",
+                "operationId": "updateAlert",
+                "parameters": [
+                    {
+                        "name": "alert",
+                        "in": "path",
+                        "description": "Alert ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateAlertRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Alert updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not the owner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Delete alert",
+                "description": "Delete a price alert",
+                "operationId": "deleteAlert",
+                "parameters": [
+                    {
+                        "name": "alert",
+                        "in": "path",
+                        "description": "Alert ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Alert deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not the owner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/alerts/{alert}/should-trigger": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Check if alert should trigger",
+                "description": "Check if the alert conditions are met",
+                "operationId": "checkAlertTrigger",
+                "parameters": [
+                    {
+                        "name": "alert",
+                        "in": "path",
+                        "description": "Alert ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alert trigger check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertTriggerCheckResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not the owner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/alerts/{alert}/trigger": {
+            "post": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Manually trigger alert",
+                "description": "Manually trigger an alert",
+                "operationId": "triggerAlert",
+                "parameters": [
+                    {
+                        "name": "alert",
+                        "in": "path",
+                        "description": "Alert ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alert triggered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertTriggerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Not the owner",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/alerts/statistics": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Get alert statistics",
+                "description": "Get system-wide alert statistics",
+                "operationId": "getAlertStatistics",
+                "responses": {
+                    "200": {
+                        "description": "Alert statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AlertStatistics"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "description": "Create a new user account and receive authentication token",
+                "operationId": "register",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User successfully registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user",
+                "description": "Authenticate user and receive access token",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "description": "Revoke the current access token",
+                "operationId": "logout",
+                "responses": {
+                    "204": {
+                        "description": "Logout successful"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/user": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get current user",
+                "description": "Get details of the authenticated user",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{product}/price-history": {
+            "get": {
+                "tags": [
+                    "Price History"
+                ],
+                "summary": "Get product price history",
+                "description": "Get price history for a specific product with optional filters",
+                "operationId": "getProductPriceHistory",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2025-06-01"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "End date (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2025-06-12"
+                        }
+                    },
+                    {
+                        "name": "source",
+                        "in": "query",
+                        "description": "Filter by source name",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "amazon"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Maximum number of records to return",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100,
+                            "maximum": 1000,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Price history list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PriceHistoryCollection"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get products list",
+                "description": "Get paginated list of products with optional filters",
+                "operationId": "getProducts",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term for product name, description or SKU",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "iPhone"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter by category",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Electronics"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Include related data (current_price, alerts)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "current_price,alerts"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Sort field",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "created_at",
+                            "enum": [
+                                "name",
+                                "created_at",
+                                "updated_at",
+                                "price"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_direction",
+                        "in": "query",
+                        "description": "Sort direction",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filter by active status",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Products list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductCollection"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get product details",
+                "description": "Get details of a specific product",
+                "operationId": "getProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Include related data (current_price)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "current_price"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProductResource"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProductWithPriceResource"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Resource not found"
+                    },
+                    "code": {
+                        "type": "integer",
+                        "example": 404
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "The given data was invalid."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": {
+                            "email": [
+                                "The email field is required."
+                            ]
+                        },
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationMeta": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "to": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 75
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationLinks": {
+                "properties": {
+                    "first": {
+                        "type": "string",
+                        "example": "http://localhost:8080/api/products?page=1",
+                        "nullable": true
+                    },
+                    "last": {
+                        "type": "string",
+                        "example": "http://localhost:8080/api/products?page=5",
+                        "nullable": true
+                    },
+                    "prev": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "next": {
+                        "type": "string",
+                        "example": "http://localhost:8080/api/products?page=2",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "required": [
+                    "id",
+                    "name",
+                    "sku",
+                    "category",
+                    "is_active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "iPhone 15 Pro"
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "APL-IPH15P"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Latest iPhone with titanium design",
+                        "nullable": true
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Electronics"
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": "https://example.com/iphone15.jpg",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductWithPrice": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Product"
+                    },
+                    {
+                        "properties": {
+                            "current_price": {
+                                "properties": {
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1299.99
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "PLN"
+                                    },
+                                    "source_name": {
+                                        "type": "string",
+                                        "example": "amazon"
+                                    },
+                                    "scraped_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-06-12T10:00:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "Alert": {
+                "required": [
+                    "id",
+                    "product_id",
+                    "email",
+                    "condition",
+                    "is_active"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "user@example.com"
+                    },
+                    "target_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 999.99,
+                        "nullable": true
+                    },
+                    "condition": {
+                        "type": "string",
+                        "enum": [
+                            "below",
+                            "above",
+                            "equals",
+                            "percent_drop",
+                            "percent_increase"
+                        ],
+                        "example": "below"
+                    },
+                    "percent_threshold": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 15,
+                        "nullable": true
+                    },
+                    "notification_channel": {
+                        "type": "string",
+                        "enum": [
+                            "email",
+                            "webhook",
+                            "sms",
+                            "slack",
+                            "discord",
+                            "telegram"
+                        ],
+                        "example": "email"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "last_triggered_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "trigger_count": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertWithProduct": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Alert"
+                    },
+                    {
+                        "properties": {
+                            "product": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "iPhone 15 Pro"
+                                    },
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "APL-IPH15P"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PriceHistory": {
+                "required": [
+                    "id",
+                    "price",
+                    "currency",
+                    "is_available",
+                    "source_name",
+                    "scraped_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1299.99
+                    },
+                    "previous_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1399.99,
+                        "nullable": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "PLN"
+                    },
+                    "is_available": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "price_change": {
+                        "type": "number",
+                        "format": "float",
+                        "example": -100,
+                        "nullable": true
+                    },
+                    "price_change_percent": {
+                        "type": "number",
+                        "format": "float",
+                        "example": -7.14,
+                        "nullable": true
+                    },
+                    "source_name": {
+                        "type": "string",
+                        "example": "amazon"
+                    },
+                    "scraped_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "required": [
+                    "id",
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-06-12T10:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertStatistics": {
+                "properties": {
+                    "total_alerts": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "active_alerts": {
+                        "type": "integer",
+                        "example": 85
+                    },
+                    "triggered_alerts": {
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "trigger_rate": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 45
+                    },
+                    "average_triggers_per_alert": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3.5
+                    }
+                },
+                "type": "object"
+            },
+            "RegisterRequest": {
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "Password123!"
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "Password123!"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "Password123!"
+                    }
+                },
+                "type": "object"
+            },
+            "CreateAlertRequest": {
+                "required": [
+                    "product_id",
+                    "condition",
+                    "notification_channel"
+                ],
+                "properties": {
+                    "product_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "condition": {
+                        "type": "string",
+                        "enum": [
+                            "below",
+                            "above",
+                            "equals",
+                            "percent_drop",
+                            "percent_increase"
+                        ],
+                        "example": "below"
+                    },
+                    "target_price": {
+                        "description": "Required for price-based conditions (below, above, equals)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 999.99
+                    },
+                    "percent_threshold": {
+                        "description": "Required for percentage-based conditions (percent_drop, percent_increase)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 15
+                    },
+                    "notification_channel": {
+                        "type": "string",
+                        "enum": [
+                            "email",
+                            "webhook",
+                            "sms",
+                            "slack",
+                            "discord",
+                            "telegram"
+                        ],
+                        "example": "email"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateAlertRequest": {
+                "properties": {
+                    "target_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1100
+                    },
+                    "percent_threshold": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 20
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "notification_channel": {
+                        "type": "string",
+                        "enum": [
+                            "email",
+                            "webhook",
+                            "sms",
+                            "slack",
+                            "discord",
+                            "telegram"
+                        ],
+                        "example": "email"
+                    },
+                    "condition": {
+                        "type": "string",
+                        "enum": [
+                            "below",
+                            "above",
+                            "equals",
+                            "percent_drop",
+                            "percent_increase"
+                        ],
+                        "example": "below"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthResponse": {
+                "properties": {
+                    "data": {
+                        "properties": {
+                            "user": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                            "token": {
+                                "type": "string",
+                                "example": "1|laravel_sanctum_token_example"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductResource": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Product"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductWithPriceResource": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/ProductWithPrice"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductCollection": {
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Product"
+                        }
+                    },
+                    "links": {
+                        "$ref": "#/components/schemas/PaginationLinks"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertResource": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/AlertWithProduct"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertCollection": {
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertWithProduct"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PriceHistoryResource": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/PriceHistory"
+                    }
+                },
+                "type": "object"
+            },
+            "PriceHistoryCollection": {
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PriceHistory"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "UserResource": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/User"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertTriggerCheckResponse": {
+                "properties": {
+                    "should_trigger": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "current_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 899.99
+                    },
+                    "target_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1000,
+                        "nullable": true
+                    },
+                    "previous_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1100,
+                        "nullable": true
+                    },
+                    "condition": {
+                        "type": "string",
+                        "example": "below"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Alert conditions met"
+                    }
+                },
+                "type": "object"
+            },
+            "AlertTriggerResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Alert triggered successfully"
+                    },
+                    "data": {
+                        "properties": {
+                            "trigger_count": {
+                                "type": "integer",
+                                "example": 1
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductSearchRequest": {
+                "properties": {
+                    "search": {
+                        "type": "string",
+                        "example": "iPhone"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Electronics"
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "maximum": 100,
+                        "minimum": 1,
+                        "example": 15
+                    },
+                    "page": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "include": {
+                        "type": "string",
+                        "example": "current_price,alerts"
+                    },
+                    "sort_by": {
+                        "type": "string",
+                        "enum": [
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "price"
+                        ],
+                        "example": "created_at"
+                    },
+                    "sort_direction": {
+                        "type": "string",
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "example": "desc"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "PriceHistoryFilterRequest": {
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-06-01"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-06-12"
+                    },
+                    "source": {
+                        "type": "string",
+                        "example": "amazon"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            },
+            "EmptyResponse": {
+                "description": "No content response",
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "User authentication endpoints"
+        },
+        {
+            "name": "Products",
+            "description": "Product management endpoints"
+        },
+        {
+            "name": "Price History",
+            "description": "Price history tracking endpoints"
+        },
+        {
+            "name": "Alerts",
+            "description": "Price alert management endpoints"
+        }
+    ]
+}
